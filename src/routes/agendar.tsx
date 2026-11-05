@@ -5,7 +5,7 @@ import { meta, PageHead } from "@/components/SiteShell";
 import { HOURS, OPEN_DAYS, SERVICES, brl, waLink } from "@/lib/salon";
 
 export const Route = createFileRoute("/agendar")({
-  validateSearch: (s: Record<string, unknown>) => ({ s: typeof s.s === "string" ? s.s : undefined }),
+  validateSearch: (q: Record<string, unknown>): { s?: string } => (typeof q["s"] === "string" ? { s: q["s"] } : {}),
   head: () => meta("Agendar horário — Delica Deza", "Escolha o serviço, veja os dias disponíveis e agende seu horário no Delica Deza."),
   component: Page,
 });
@@ -14,7 +14,7 @@ const WEEK = ["D", "S", "T", "Q", "Q", "S", "S"];
 
 function Page() {
   const { s } = Route.useSearch();
-  const [service, setService] = useState(s || SERVICES[0].id);
+  const [service, setService] = useState<string>(s ?? SERVICES[0]!.id);
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); });
   const [day, setDay] = useState<Date | null>(null);
   const [hour, setHour] = useState<string | null>(null);
@@ -27,7 +27,7 @@ function Page() {
     return [...Array(first).fill(null), ...Array.from({ length: total }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1))];
   }, [month]);
 
-  const sv = SERVICES.find((x) => x.id === service)!;
+  const sv = SERVICES.find((x) => x.id === service) ?? SERVICES[0]!;
   const ok = day && hour && name.trim();
   const msg = ok ? `Olá! Gostaria de agendar:\n• Serviço: ${sv.name}\n• Data: ${day!.toLocaleDateString("pt-BR")} às ${hour}\n• Nome: ${name}` : "";
 

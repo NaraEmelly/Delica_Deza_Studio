@@ -8,9 +8,9 @@ import { SALON, SERVICES, brl } from "@/lib/salon";
 import { pixPayload } from "@/lib/pix";
 
 export const Route = createFileRoute("/pix")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    v: typeof s.v === "number" ? s.v : undefined,
-    d: typeof s.d === "string" ? s.d : undefined,
+  validateSearch: (q: Record<string, unknown>): { v?: number; d?: string } => ({
+    ...(typeof q["v"] === "number" ? { v: q["v"] } : {}),
+    ...(typeof q["d"] === "string" ? { d: q["d"] } : {}),
   }),
   head: () => meta("Pagar com Pix — Delica Deza", "Gere o QR Code e o código Pix copia e cola para pagar seu sinal ou serviço."),
   component: Page,

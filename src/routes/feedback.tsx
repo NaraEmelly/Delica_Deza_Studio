@@ -12,7 +12,7 @@ export const Route = createFileRoute("/feedback")({
 function Page() {
   const [stars, setStars] = useState(5);
   const [name, setName] = useState("");
-  const [service, setService] = useState(SERVICES[0].name);
+  const [service, setService] = useState(SERVICES[0]!.name);
   const [text, setText] = useState("");
   const msg = `Feedback Delica Deza\n${"★".repeat(stars)}${"☆".repeat(5 - stars)}\nNome: ${name}\nServiço: ${service}\n${text}`;
 

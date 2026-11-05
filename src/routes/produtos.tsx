@@ -14,7 +14,7 @@ function Page() {
   const [cart, setCart] = useState<Record<string, number>>({});
   const set = (n: string, d: number) => setCart((c) => ({ ...c, [n]: Math.max(0, (c[n] || 0) + d) }));
   const items = PRODUCTS.filter((p) => cart[p.name]);
-  const total = items.reduce((s, p) => s + p.price * cart[p.name], 0);
+  const total = items.reduce((s, p) => s + p.price * (cart[p.name] ?? 0), 0);
   const msg = `Olá! Quero encomendar:\n${items.map((p) => `• ${cart[p.name]}x ${p.name}`).join("\n")}\nTotal: ${brl(total)}`;
 
   return (
