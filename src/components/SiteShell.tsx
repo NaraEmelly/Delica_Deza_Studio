@@ -14,7 +14,7 @@ const NAV = [
 export function SiteShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col grain">
       <header className="sticky top-0 z-40 bg-ink text-ink-foreground">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-5 h-16">
           <Link to="/" className="font-display text-2xl italic">
@@ -61,10 +61,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
 export function PageHead({ kicker, title, children }: { kicker: string; title: string; children?: ReactNode }) {
   return (
-    <section className="bg-primary text-primary-foreground">
+    <section className="bg-primary text-primary-foreground grain">
       <div className="mx-auto max-w-6xl px-5 py-14">
         <p className="uppercase tracking-[0.3em] text-xs text-accent">{kicker}</p>
         <h1 className="mt-3 text-4xl md:text-5xl">{title}</h1>
+        <div className="mt-4 h-px w-24 bg-gold" />
         {children && <p className="mt-3 max-w-xl opacity-80">{children}</p>}
       </div>
     </section>
