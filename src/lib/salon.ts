@@ -1,7 +1,7 @@
 // Dados do salão — substitua pelos dados reais.
 export const SALON = {
   name: "Delica Deza",
-  whatsapp: "5511999999999",
+  whatsapp: "5522988328434",
   pixKey: "delicadeza@email.com",
   pixName: "DELICA DEZA",
   pixCity: "SAO PAULO",
