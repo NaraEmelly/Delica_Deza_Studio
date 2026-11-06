@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Award, Gem, HeartHandshake, Leaf, Camera, ArrowRight, Star, CalendarHeart, QrCode, Check } from "lucide-react";
+import { Award, Gem, HeartHandshake, Leaf, ArrowRight, Star, CalendarHeart, QrCode, Check } from "lucide-react";
 import hero from "@/assets/hero.jpg";
 import g1 from "@/assets/g1.jpg";
 import g2 from "@/assets/g2.jpg";
 import interior from "@/assets/interior.jpg";
 import twist from "@/assets/twist.jpg";
 import nago from "@/assets/nago.jpg";
+import profsdeza from "@/assets/profsdeza.png";
 import { meta } from "@/components/SiteShell";
 import { brl } from "@/lib/salon";
 
@@ -110,9 +111,8 @@ function Index() {
         <div className="mx-auto max-w-6xl px-5 py-20 grid md:grid-cols-2 gap-12 items-center">
           <div className="relative mx-auto w-[80%] md:w-[85%]">
             <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-t-full border-2 border-accent" />
-            <div className="relative aspect-[3/4] rounded-t-full bg-primary grain flex flex-col items-center justify-center text-primary-foreground">
-              <Camera size={40} className="text-accent" />
-              <p className="script text-2xl mt-2">foto da profissional</p>// ADICIONAR A FOTO 
+            <div className="relative aspect-[3/4] overflow-hidden rounded-t-full bg-primary">
+              <img src={profsdeza} alt="Deza, fundadora e trancista do Delica Deza" className="h-full w-full object-cover object-center" />
             </div>
             <div className="absolute -bottom-5 -right-2 rounded-2xl bg-ink text-ink-foreground px-5 py-3 shadow-soft">
               <p className="script text-2xl text-accent leading-none">Deza</p>
