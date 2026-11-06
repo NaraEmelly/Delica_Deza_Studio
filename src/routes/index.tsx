@@ -112,7 +112,7 @@ function Index() {
             <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-t-full border-2 border-accent" />
             <div className="relative aspect-[3/4] rounded-t-full bg-primary grain flex flex-col items-center justify-center text-primary-foreground">
               <Camera size={40} className="text-accent" />
-              <p className="script text-2xl mt-2">foto da profissional</p>
+              <p className="script text-2xl mt-2">foto da profissional</p>// ADICIONAR A FOTO 
             </div>
             <div className="absolute -bottom-5 -right-2 rounded-2xl bg-ink text-ink-foreground px-5 py-3 shadow-soft">
               <p className="script text-2xl text-accent leading-none">Deza</p>
