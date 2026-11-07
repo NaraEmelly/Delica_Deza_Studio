@@ -1,13 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import hero from "@/assets/hero.jpg";
+import g1 from "@/assets/g1.jpg";
+import g2 from "@/assets/g2.jpg";
+import nago from "@/assets/nago.jpg";
+import produtos from "@/assets/produtos.jpg";
+import twist from "@/assets/twist.jpg";
 import { meta, PageHead } from "@/components/SiteShell";
 import { HOURS, OPEN_DAYS, SERVICES, brl, waLink } from "@/lib/salon";
 import { buildBookingMessage } from "@/lib/booking-message";
 
 export const Route = createFileRoute("/agendar")({
-  validateSearch: (q: Record<string, unknown>): { s?: string } => (typeof q["s"] === "string" ? { s: q["s"] } : {}),
-  head: () => meta("Agendar horário — Delica Deza", "Preencha seus dados, escolha o serviço e envie seu pedido de agendamento ao Delica Deza."),
+  validateSearch: (q: Record<string, unknown>): { s?: string } =>
+    typeof q["s"] === "string" ? { s: q["s"] } : {},
+  head: () =>
+    meta(
+      "Agendar horário — Delica Deza",
+      "Preencha seus dados, escolha o serviço e envie seu pedido de agendamento ao Delica Deza.",
+    ),
   component: Page,
 });
 
@@ -21,9 +32,35 @@ const CHEMICAL_TIMES = [
   "Não lembro",
 ];
 
+const SERVICE_IMAGES: Record<string, { src: string; alt: string }> = {
+  box: { src: g1, alt: "Box braids longas com detalhes dourados" },
+  knotless: { src: hero, alt: "Knotless braids longas" },
+  fulani: { src: g2, alt: "Fulani braids com miçangas" },
+  nago: { src: nago, alt: "Tranças nagô com desenhos geométricos" },
+  twist: { src: twist, alt: "Passion twists longos" },
+  manut: { src: g1, alt: "Tranças longas, referência para manutenção" },
+  hidra: { src: produtos, alt: "Produtos para hidratação e cuidados capilares" },
+};
+
+const FIBER_SERVICE_IDS = new Set(["box", "knotless", "fulani", "nago", "twist"]);
+const FIBER_COLORS = [
+  { name: "1 — Preto", color: "#171717" },
+  { name: "1B — Preto natural", color: "#30251f" },
+  { name: "2 — Castanho escuro", color: "#51372c" },
+  { name: "4 — Castanho médio", color: "#79513b" },
+  { name: "27 — Loiro mel", color: "#c99148" },
+  { name: "30 — Acobreado", color: "#984d2e" },
+  { name: "350 — Ruivo", color: "#b43b24" },
+  { name: "613 — Loiro claro", color: "#e5d19c" },
+  { name: "Borgonha", color: "#6d1838" },
+  { name: "Cinza", color: "#858585" },
+];
+
 function Page() {
   const { s } = Route.useSearch();
   const [service, setService] = useState<string>(s ?? SERVICES[0]!.id);
+  const [fiberColorChoice, setFiberColorChoice] = useState("");
+  const [fiberColors, setFiberColors] = useState<string[]>([]);
   const [month, setMonth] = useState(() => {
     const date = new Date();
     return new Date(date.getFullYear(), date.getMonth(), 1);
@@ -51,11 +88,15 @@ function Page() {
     const total = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
     return [
       ...Array(first).fill(null),
-      ...Array.from({ length: total }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1)),
+      ...Array.from(
+        { length: total },
+        (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1),
+      ),
     ];
   }, [month]);
 
   const selectedService = SERVICES.find((item) => item.id === service) ?? SERVICES[0]!;
+  const usesFiber = FIBER_SERVICE_IDS.has(service);
 
   function clearPreparedSend() {
     setFormError("");
@@ -74,10 +115,24 @@ function Page() {
       return;
     }
 
+    if (usesFiber && fiberColorChoice === "colors" && fiberColors.length === 0) {
+      setFormError("Escolha pelo menos uma cor de fibra ou selecione outra opção.");
+      return;
+    }
+
     const message = buildBookingMessage({
       service: selectedService.name,
       servicePrice: brl(selectedService.price),
       serviceDuration: selectedService.time,
+      fiberColor: !usesFiber
+        ? "Não se aplica a este serviço"
+        : fiberColorChoice === "root"
+          ? "Da mesma cor da raiz do cabelo"
+          : fiberColorChoice === "colors"
+            ? fiberColors.join(", ")
+            : fiberColorChoice === "talk"
+              ? "Prefere conversar com a profissional"
+              : "Não informado",
       date: day.toLocaleDateString("pt-BR"),
       time: hour,
       name: name.trim(),
@@ -101,7 +156,9 @@ function Page() {
             text: message,
             files,
           });
-          setSendStatus("Compartilhamento concluído. Confira se as fotos e a ficha foram enviadas pelo WhatsApp.");
+          setSendStatus(
+            "Compartilhamento concluído. Confira se as fotos e a ficha foram enviadas pelo WhatsApp.",
+          );
           return;
         }
       } catch (error) {
@@ -111,12 +168,16 @@ function Page() {
         }
         console.error("Não foi possível compartilhar as fotos do agendamento.", error);
         setPreparedMessage(message);
-        setSendStatus("Não foi possível compartilhar as fotos automaticamente. Abra o WhatsApp abaixo e anexe-as à conversa.");
+        setSendStatus(
+          "Não foi possível compartilhar as fotos automaticamente. Abra o WhatsApp abaixo e anexe-as à conversa.",
+        );
         return;
       }
 
       setPreparedMessage(message);
-      setSendStatus("Este aparelho não permite anexar fotos pelo compartilhamento. Abra o WhatsApp abaixo e anexe as fotos selecionadas antes de enviar.");
+      setSendStatus(
+        "Este aparelho não permite anexar fotos pelo compartilhamento. Abra o WhatsApp abaixo e anexe as fotos selecionadas antes de enviar.",
+      );
       return;
     }
 
@@ -127,30 +188,136 @@ function Page() {
   return (
     <>
       <PageHead kicker="Agendamento" title="Vamos marcar seu horário?">
-        Preencha a ficha para que a profissional conheça suas preferências e possa preparar seu atendimento.
+        Preencha a ficha para que a profissional conheça suas preferências e possa preparar seu
+        atendimento.
       </PageHead>
       <form
         onSubmit={handleSubmit}
         onChange={clearPreparedSend}
         className="mx-auto max-w-3xl space-y-8 px-5 py-10"
       >
-        <section className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7" aria-labelledby="appointment-title">
+        <section
+          className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7"
+          aria-labelledby="appointment-title"
+        >
           <div>
-            <h2 id="appointment-title" className="font-display text-2xl">1. Seu atendimento</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Escolha o serviço, o dia e o horário desejados.</p>
+            <h2 id="appointment-title" className="font-display text-2xl">
+              1. Seu atendimento
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Escolha o serviço, o dia e o horário desejados.
+            </p>
           </div>
 
-          <label className="block">
-            <span className="mb-1 block font-medium">Serviço</span>
-            <select className="field" value={service} onChange={(event) => setService(event.target.value)}>
-              {SERVICES.map((item) => (
-                <option key={item.id} value={item.id}>{item.name} — a partir de {brl(item.price)}</option>
-              ))}
-            </select>
-            <span className="mt-1 block text-sm text-muted-foreground">
-              Duração aproximada: {selectedService.time}. O valor final pode variar conforme o cabelo.
-            </span>
-          </label>
+          <fieldset>
+            <legend className="mb-3 font-medium">Escolha o serviço</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {SERVICES.map((item) => {
+                const image = SERVICE_IMAGES[item.id]!;
+                const selected = service === item.id;
+                return (
+                  <label
+                    key={item.id}
+                    className={`cursor-pointer overflow-hidden rounded-xl border transition-colors focus-within:ring-2 focus-within:ring-ring ${selected ? "border-primary ring-2 ring-primary/30" : "bg-background hover:border-primary/50"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="service"
+                      value={item.id}
+                      checked={selected}
+                      onChange={() => {
+                        clearPreparedSend();
+                        setService(item.id);
+                      }}
+                      required
+                      className="sr-only"
+                    />
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      loading="lazy"
+                      className="aspect-[16/9] w-full object-cover"
+                    />
+                    <span className="flex items-start justify-between gap-3 p-3">
+                      <span>
+                        <span className="block font-medium">{item.name}</span>
+                        <span className="mt-1 block text-sm text-muted-foreground">
+                          Duração: {item.time}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right text-sm text-secondary">
+                        a partir de
+                        <br />
+                        {brl(item.price)}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              O valor final pode variar conforme o cabelo.
+            </p>
+          </fieldset>
+
+          {usesFiber && (
+            <fieldset>
+              <legend className="mb-2 font-medium">Qual cor de fibra você prefere?</legend>
+              <p className="mb-3 text-sm text-muted-foreground">
+                Você pode escolher uma ou mais cores para combinar.
+              </p>
+              <div className="space-y-2">
+                {[
+                  ["root", "Da mesma cor da raiz do meu cabelo"],
+                  ["colors", "Quero escolher a cor da fibra"],
+                  ["talk", "Prefiro decidir com a profissional"],
+                ].map(([value, label]) => (
+                  <label key={value} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="fiber-color-choice"
+                      value={value}
+                      checked={fiberColorChoice === value}
+                      onChange={(event) => setFiberColorChoice(event.target.value)}
+                      required
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              {fiberColorChoice === "colors" && (
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {FIBER_COLORS.map((fiberColor) => {
+                    const checked = fiberColors.includes(fiberColor.name);
+                    return (
+                      <label
+                        key={fiberColor.name}
+                        className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${checked ? "border-primary bg-primary/10" : "bg-background"}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(event) => {
+                            setFiberColors((current) =>
+                              event.target.checked
+                                ? [...current, fiberColor.name]
+                                : current.filter((color) => color !== fiberColor.name),
+                            );
+                          }}
+                        />
+                        <span
+                          className="size-5 shrink-0 rounded-full border"
+                          style={{ backgroundColor: fiberColor.color }}
+                          aria-hidden="true"
+                        />
+                        {fiberColor.name}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </fieldset>
+          )}
 
           <fieldset>
             <legend className="mb-3 font-medium">Dia</legend>
@@ -162,7 +329,10 @@ function Page() {
                     clearPreparedSend();
                     setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1));
                   }}
-                  disabled={month.getFullYear() === today.getFullYear() && month.getMonth() <= today.getMonth()}
+                  disabled={
+                    month.getFullYear() === today.getFullYear() &&
+                    month.getMonth() <= today.getMonth()
+                  }
                   aria-label="Mês anterior"
                   className="rounded-full p-2 disabled:opacity-40"
                 >
@@ -185,7 +355,9 @@ function Page() {
               </div>
               <div className="grid grid-cols-7 gap-1 text-center text-sm">
                 {WEEK.map((weekday, index) => (
-                  <span key={index} className="py-1 text-muted-foreground">{weekday}</span>
+                  <span key={index} className="py-1 text-muted-foreground">
+                    {weekday}
+                  </span>
                 ))}
                 {days.map((date, index) => {
                   if (!date) return <span key={index} />;
@@ -236,25 +408,49 @@ function Page() {
           )}
         </section>
 
-        <section className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7" aria-labelledby="personal-title">
+        <section
+          className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7"
+          aria-labelledby="personal-title"
+        >
           <div>
-            <h2 id="personal-title" className="font-display text-2xl">2. Sobre você</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Essas informações ajudam a equipe a preparar seu atendimento.</p>
+            <h2 id="personal-title" className="font-display text-2xl">
+              2. Sobre você
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Essas informações ajudam a equipe a preparar seu atendimento.
+            </p>
           </div>
 
           <label className="block">
             <span className="mb-1 block font-medium">Qual é o seu nome?</span>
-            <input className="field" value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" required />
+            <input
+              className="field"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              autoComplete="name"
+              required
+            />
           </label>
 
           <label className="block">
-            <span className="mb-1 block font-medium">Nome social <span className="font-normal text-muted-foreground">(opcional)</span></span>
-            <input className="field" value={socialName} onChange={(event) => setSocialName(event.target.value)} />
+            <span className="mb-1 block font-medium">
+              Nome social <span className="font-normal text-muted-foreground">(opcional)</span>
+            </span>
+            <input
+              className="field"
+              value={socialName}
+              onChange={(event) => setSocialName(event.target.value)}
+            />
           </label>
 
           <label className="block">
             <span className="mb-1 block font-medium">Como você se identifica?</span>
-            <select className="field" value={gender} onChange={(event) => setGender(event.target.value)} required>
+            <select
+              className="field"
+              value={gender}
+              onChange={(event) => setGender(event.target.value)}
+              required
+            >
               <option value="">Selecione uma opção</option>
               <option>Mulher</option>
               <option>Homem</option>
@@ -264,17 +460,31 @@ function Page() {
           </label>
         </section>
 
-        <section className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7" aria-labelledby="hair-title">
+        <section
+          className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7"
+          aria-labelledby="hair-title"
+        >
           <div>
-            <h2 id="hair-title" className="font-display text-2xl">3. Sobre seu cabelo</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Conte um pouco sobre seu cabelo e seu histórico de cuidados.</p>
+            <h2 id="hair-title" className="font-display text-2xl">
+              3. Sobre seu cabelo
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Conte um pouco sobre seu cabelo e seu histórico de cuidados.
+            </p>
           </div>
 
           <fieldset>
-            <legend className="mb-2 font-medium">Você fez algum procedimento químico recentemente?</legend>
-            <p className="mb-2 text-sm text-muted-foreground">Ex.: coloração, descoloração, relaxamento ou progressiva.</p>
+            <legend className="mb-2 font-medium">
+              Você fez algum procedimento químico recentemente?
+            </legend>
+            <p className="mb-2 text-sm text-muted-foreground">
+              Ex.: coloração, descoloração, relaxamento ou progressiva.
+            </p>
             <div className="flex flex-wrap gap-4">
-              {[["yes", "Sim"], ["no", "Não"]].map(([value, label]) => (
+              {[
+                ["yes", "Sim"],
+                ["no", "Não"],
+              ].map(([value, label]) => (
                 <label key={value} className="flex items-center gap-2">
                   <input
                     type="radio"
@@ -292,10 +502,19 @@ function Page() {
 
           {hadRecentChemical === "yes" && (
             <label className="block">
-              <span className="mb-1 block font-medium">Quando foi seu último procedimento químico?</span>
-              <select className="field" value={lastChemical} onChange={(event) => setLastChemical(event.target.value)} required>
+              <span className="mb-1 block font-medium">
+                Quando foi seu último procedimento químico?
+              </span>
+              <select
+                className="field"
+                value={lastChemical}
+                onChange={(event) => setLastChemical(event.target.value)}
+                required
+              >
                 <option value="">Selecione o período</option>
-                {CHEMICAL_TIMES.map((period) => <option key={period}>{period}</option>)}
+                {CHEMICAL_TIMES.map((period) => (
+                  <option key={period}>{period}</option>
+                ))}
               </select>
             </label>
           )}
@@ -303,7 +522,10 @@ function Page() {
           <fieldset>
             <legend className="mb-2 font-medium">Você já colocou tranças alguma vez?</legend>
             <div className="flex flex-wrap gap-4">
-              {[["yes", "Sim"], ["no", "Não"]].map(([value, label]) => (
+              {[
+                ["yes", "Sim"],
+                ["no", "Não"],
+              ].map(([value, label]) => (
                 <label key={value} className="flex items-center gap-2">
                   <input
                     type="radio"
@@ -321,7 +543,12 @@ function Page() {
 
           <label className="block">
             <span className="mb-1 block font-medium">Qual é a curvatura do seu cabelo?</span>
-            <select className="field" value={hairType} onChange={(event) => setHairType(event.target.value)} required>
+            <select
+              className="field"
+              value={hairType}
+              onChange={(event) => setHairType(event.target.value)}
+              required
+            >
               <option value="">Selecione a curvatura</option>
               <optgroup label="Tipo 1 — Liso">
                 <option>1A — Liso</option>
@@ -348,14 +575,24 @@ function Page() {
           </label>
         </section>
 
-        <section className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7" aria-labelledby="payment-title">
+        <section
+          className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7"
+          aria-labelledby="payment-title"
+        >
           <div>
-            <h2 id="payment-title" className="font-display text-2xl">4. Pagamento</h2>
+            <h2 id="payment-title" className="font-display text-2xl">
+              4. Pagamento
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">Como você prefere pagar?</p>
           </div>
           <label className="block">
             <span className="mb-1 block font-medium">Forma de pagamento</span>
-            <select className="field" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)} required>
+            <select
+              className="field"
+              value={paymentMethod}
+              onChange={(event) => setPaymentMethod(event.target.value)}
+              required
+            >
               <option value="">Selecione uma opção</option>
               <option>Dinheiro</option>
               <option>Pix</option>
@@ -365,14 +602,25 @@ function Page() {
           </label>
         </section>
 
-        <section className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7" aria-labelledby="photos-title">
+        <section
+          className="space-y-5 rounded-2xl border bg-card p-5 sm:p-7"
+          aria-labelledby="photos-title"
+        >
           <div>
-            <h2 id="photos-title" className="font-display text-2xl">5. Fotos para o atendimento</h2>
-            <p className="mt-1 text-sm text-muted-foreground">As fotos são opcionais. Se puder, envie imagens de referência do modelo que você gostaria.</p>
+            <h2 id="photos-title" className="font-display text-2xl">
+              5. Fotos para o atendimento
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              As fotos são opcionais. Se puder, envie imagens de referência do modelo que você
+              gostaria.
+            </p>
           </div>
 
           <label className="block">
-            <span className="mb-1 block font-medium">Fotos dos modelos de tranças <span className="font-normal text-muted-foreground">(opcional)</span></span>
+            <span className="mb-1 block font-medium">
+              Fotos dos modelos de tranças{" "}
+              <span className="font-normal text-muted-foreground">(opcional)</span>
+            </span>
             <input
               className="field"
               type="file"
@@ -384,13 +632,20 @@ function Page() {
           {inspirationPhotos.length > 0 && (
             <ul className="space-y-2" aria-label="Fotos de referência selecionadas">
               {inspirationPhotos.map((file, index) => (
-                <li key={`${file.name}-${index}`} className="flex items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2 text-sm">
+                <li
+                  key={`${file.name}-${index}`}
+                  className="flex items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2 text-sm"
+                >
                   <span className="min-w-0 truncate">{file.name}</span>
                   <button
                     type="button"
                     className="rounded p-1"
                     aria-label={`Remover foto ${file.name}`}
-                    onClick={() => setInspirationPhotos((photos) => photos.filter((_, photoIndex) => photoIndex !== index))}
+                    onClick={() =>
+                      setInspirationPhotos((photos) =>
+                        photos.filter((_, photoIndex) => photoIndex !== index),
+                      )
+                    }
                   >
                     <X size={18} />
                   </button>
@@ -400,14 +655,19 @@ function Page() {
           )}
 
           <label className="block">
-            <span className="mb-1 block font-medium">Uma foto do seu cabelo <span className="font-normal text-muted-foreground">(opcional)</span></span>
+            <span className="mb-1 block font-medium">
+              Uma foto do seu cabelo{" "}
+              <span className="font-normal text-muted-foreground">(opcional)</span>
+            </span>
             <input
               className="field"
               type="file"
               accept="image/*"
               onChange={(event) => setPersonalPhoto(event.target.files?.[0] ?? null)}
             />
-            <span className="mt-1 block text-sm text-muted-foreground">A foto ajuda a profissional a entender o comprimento e o volume.</span>
+            <span className="mt-1 block text-sm text-muted-foreground">
+              A foto ajuda a profissional a entender o comprimento e o volume.
+            </span>
           </label>
           {personalPhoto && (
             <div className="flex items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2 text-sm">
@@ -425,18 +685,34 @@ function Page() {
         </section>
 
         <div className="space-y-3">
-          {formError && <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-destructive">{formError}</p>}
-          {sendStatus && <p role="status" className="rounded-lg border bg-card p-3 text-sm">{sendStatus}</p>}
+          {formError && (
+            <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-destructive">
+              {formError}
+            </p>
+          )}
+          {sendStatus && (
+            <p role="status" className="rounded-lg border bg-card p-3 text-sm">
+              {sendStatus}
+            </p>
+          )}
           {preparedMessage && (
-            <a href={waLink(preparedMessage)} target="_blank" rel="noreferrer" className="btn-gold w-full">
+            <a
+              href={waLink(preparedMessage)}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-gold w-full"
+            >
               Abrir WhatsApp e enviar ficha
             </a>
           )}
           <button type="submit" className="btn-gold w-full">
-            {inspirationPhotos.length > 0 || personalPhoto ? "Preparar ficha e compartilhar fotos" : "Preparar ficha para o WhatsApp"}
+            {inspirationPhotos.length > 0 || personalPhoto
+              ? "Preparar ficha e compartilhar fotos"
+              : "Preparar ficha para o WhatsApp"}
           </button>
           <p className="text-center text-xs text-muted-foreground">
-            Você poderá revisar a mensagem e confirmar o envio no WhatsApp. O agendamento será confirmado pela profissional.
+            Você poderá revisar a mensagem e confirmar o envio no WhatsApp. O agendamento será
+            confirmado pela profissional.
           </p>
         </div>
       </form>

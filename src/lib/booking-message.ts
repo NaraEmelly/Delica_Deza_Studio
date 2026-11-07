@@ -2,6 +2,7 @@ export interface BookingMessageDetails {
   service: string;
   servicePrice: string;
   serviceDuration: string;
+  fiberColor: string;
   date: string;
   time: string;
   name: string;
@@ -24,6 +25,7 @@ export function buildBookingMessage(details: BookingMessageDetails) {
     `• Serviço: ${details.service}`,
     `• Valor inicial: ${details.servicePrice}`,
     `• Duração aproximada: ${details.serviceDuration}`,
+    `• Cor da fibra: ${details.fiberColor}`,
     `• Data desejada: ${details.date}`,
     `• Horário desejado: ${details.time}`,
     "",
@@ -44,7 +46,9 @@ export function buildBookingMessage(details: BookingMessageDetails) {
     ...(details.inspirationPhotoNames.length > 0
       ? details.inspirationPhotoNames.map((name, index) => `• Referência ${index + 1}: ${name}`)
       : ["• Nenhuma foto de referência"]),
-    ...(details.personalPhotoName ? [`• Foto do cabelo: ${details.personalPhotoName}`] : ["• Foto do cabelo: não enviada"]),
+    ...(details.personalPhotoName
+      ? [`• Foto do cabelo: ${details.personalPhotoName}`]
+      : ["• Foto do cabelo: não enviada"]),
     "",
     "Por favor, confirme a disponibilidade e o valor final do serviço.",
   ];

@@ -6,6 +6,7 @@ const booking = {
   service: "Box Braids",
   servicePrice: "R$ 280,00",
   serviceDuration: "5h",
+  fiberColor: "1 — Preto, 27 — Loiro mel",
   date: "10/11/2026",
   time: "10:00",
   name: "Ana Silva",
@@ -26,8 +27,11 @@ describe("buildBookingMessage", () => {
 
     expect(message).toContain("📋 PEDIDO DE AGENDAMENTO — DELICA DEZA");
     expect(message).toContain("• Serviço: Box Braids");
+    expect(message).toContain("• Cor da fibra: 1 — Preto, 27 — Loiro mel");
     expect(message).toContain("• Nome social: Ana");
-    expect(message).toContain("• Procedimento químico recente: Sim — último procedimento de 1 a 3 meses");
+    expect(message).toContain(
+      "• Procedimento químico recente: Sim — último procedimento de 1 a 3 meses",
+    );
     expect(message).toContain("• Já colocou tranças: Não");
     expect(message).toContain("• Curvatura: 3B — Cacheado");
     expect(message).toContain("• Forma preferida: Pix");
@@ -38,6 +42,7 @@ describe("buildBookingMessage", () => {
   it("identifies optional social name and photos that were not provided", () => {
     const message = buildBookingMessage({
       ...booking,
+      fiberColor: "Da mesma cor da raiz do cabelo",
       socialName: "",
       hadRecentChemical: false,
       lastChemical: "",
@@ -49,6 +54,7 @@ describe("buildBookingMessage", () => {
     expect(message).not.toContain("Nome social:");
     expect(message).toContain("• Procedimento químico recente: Não");
     expect(message).toContain("• Já colocou tranças: Sim");
+    expect(message).toContain("• Cor da fibra: Da mesma cor da raiz do cabelo");
     expect(message).toContain("• Nenhuma foto de referência");
     expect(message).toContain("• Foto do cabelo: não enviada");
   });
