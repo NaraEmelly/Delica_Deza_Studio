@@ -1,7 +1,40 @@
-import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
-import { Menu, X, Instagram, MessageCircle } from "lucide-react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { useEffect, useState, type ReactNode } from "react";
+import { Accessibility, Menu, X, Instagram, MessageCircle } from "lucide-react";
 import { SALON, waLink } from "@/lib/salon";
+
+const SIMPLE_MODE_STORAGE_KEY = "delica-deza-simple-mode";
+
+const SIMPLE_PAGE_INFO: Record<string, { description: string; detailsLabel: string }> = {
+  "/": {
+    description: "Veja os serviços, conheça os produtos ou marque seu horário.",
+    detailsLabel: "Ver mais informações do salão",
+  },
+  "/servicos": {
+    description: "Escolha uma trança, confira o preço inicial e marque seu horário.",
+    detailsLabel: "Ver serviços e preços",
+  },
+  "/agendar": {
+    description: "Escolha o serviço, o dia e o horário. Depois, informe seu nome e confirme pelo WhatsApp.",
+    detailsLabel: "Continuar para escolher o horário",
+  },
+  "/produtos": {
+    description: "Escolha os produtos e as quantidades. Depois, envie seu pedido pelo WhatsApp.",
+    detailsLabel: "Ver produtos e fazer pedido",
+  },
+  "/pix": {
+    description: "Informe o valor, gere o código Pix e copie para pagar pelo aplicativo do seu banco.",
+    detailsLabel: "Continuar para gerar o Pix",
+  },
+  "/feedback": {
+    description: "Dê uma nota, conte como foi seu atendimento e envie sua opinião pelo WhatsApp.",
+    detailsLabel: "Continuar para enviar sua opinião",
+  },
+  "/galeria": {
+    description: "Veja fotos de tranças feitas no salão.",
+    detailsLabel: "Ver fotos da galeria",
+  },
+};
 
 const NAV = [
   { to: "/servicos", label: "Serviços" },
@@ -11,8 +44,71 @@ const NAV = [
   { to: "/feedback", label: "Feedback" },
 ] as const;
 
+function SimpleModeButton({
+  simpleMode,
+  onToggle,
+  className,
+}: {
+  simpleMode: boolean;
+  onToggle: () => void;
+  className?: string;
+}) {
+  const label = simpleMode ? "Desativar modo simples" : "Ativar modo simples";
+
+  return (
+    <button
+      type="button"
+      className={`btn-ghost !py-2 !px-3 text-xs ${className ?? ""}`}
+      onClick={onToggle}
+      aria-label={label}
+      aria-pressed={simpleMode}
+    >
+      <Accessibility size={18} aria-hidden="true" />
+      <span className="hidden lg:inline" aria-hidden="true">
+        {simpleMode ? "Modo simples ativo" : "Modo simples"}
+      </span>
+    </button>
+  );
+}
+
 export function SiteShell({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
+  const [simpleMode, setSimpleMode] = useState(false);
+  const [showAccessibilityPrompt, setShowAccessibilityPrompt] = useState(false);
+  const pageInfo = SIMPLE_PAGE_INFO[pathname] ?? {
+    description: "Encontre as informações e os serviços do Delica Deza.",
+    detailsLabel: "Ver conteúdo da página",
+  };
+
+  useEffect(() => {
+    try {
+      const preference = window.localStorage.getItem(SIMPLE_MODE_STORAGE_KEY);
+      if (preference === "simple") {
+        setSimpleMode(true);
+      } else if (preference !== "standard") {
+        setShowAccessibilityPrompt(true);
+      }
+    } catch (error) {
+      console.error("Não foi possível carregar a preferência de acessibilidade.", error);
+      setShowAccessibilityPrompt(true);
+    }
+  }, []);
+
+  function chooseSimpleMode(enabled: boolean) {
+    try {
+      window.localStorage.setItem(SIMPLE_MODE_STORAGE_KEY, enabled ? "simple" : "standard");
+    } catch (error) {
+      console.error("Não foi possível salvar a preferência de acessibilidade.", error);
+    }
+    setSimpleMode(enabled);
+    setShowAccessibilityPrompt(false);
+  }
+
+  function toggleSimpleMode() {
+    chooseSimpleMode(!simpleMode);
+  }
+
   return (
     <div className="min-h-screen flex flex-col grain">
       <header className="sticky top-0 z-40 bg-ink text-ink-foreground">
@@ -27,11 +123,37 @@ export function SiteShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
             <Link to="/agendar" className="btn-gold !py-2">Agendar</Link>
+            <SimpleModeButton simpleMode={simpleMode} onToggle={toggleSimpleMode} />
           </nav>
-          <button className="md:hidden" onClick={() => setOpen(!open)} aria-label="Menu">
-            {open ? <X /> : <Menu />}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <SimpleModeButton simpleMode={simpleMode} onToggle={toggleSimpleMode} />
+            <button type="button" onClick={() => setOpen(!open)} aria-label={open ? "Fechar menu" : "Abrir menu"} aria-expanded={open}>
+              {open ? <X /> : <Menu />}
+            </button>
+          </div>
         </div>
+        {showAccessibilityPrompt && (
+          <section className="border-t border-accent/40 bg-background text-foreground" aria-labelledby="accessibility-prompt-title">
+            <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 id="accessibility-prompt-title" className="text-xl font-semibold">
+                  Você gostaria de ver informações mais simples?
+                </h2>
+                <p className="mt-1 text-sm">
+                  Mostraremos primeiro um resumo direto. Você ainda poderá abrir todos os detalhes.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button type="button" className="btn-gold" onClick={() => chooseSimpleMode(true)}>
+                  Sim, deixar mais simples
+                </button>
+                <button type="button" className="btn-ghost" onClick={() => chooseSimpleMode(false)}>
+                  Não, continuar assim
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
         {open && (
           <nav className="md:hidden flex flex-col gap-4 px-5 pb-6 text-lg">
             {NAV.map((n) => (
@@ -41,7 +163,32 @@ export function SiteShell({ children }: { children: ReactNode }) {
           </nav>
         )}
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        {simpleMode ? (
+          <section className="mx-auto max-w-6xl px-5 py-8" aria-labelledby="simple-page-title">
+            <div className="rounded-2xl border border-primary/30 bg-card p-6">
+              <h1 id="simple-page-title" className="text-2xl font-semibold">
+                Informações principais
+              </h1>
+              <p className="mt-2">{pageInfo.description}</p>
+              {pathname === "/" && (
+                <nav className="mt-5 flex flex-wrap gap-3" aria-label="Acesso rápido">
+                  <Link to="/servicos" className="btn-gold">Ver serviços</Link>
+                  <Link to="/agendar" className="btn-ghost">Marcar horário</Link>
+                  <Link to="/produtos" className="btn-ghost">Ver produtos</Link>
+                  <Link to="/pix" className="btn-ghost">Pagar com Pix</Link>
+                </nav>
+              )}
+            </div>
+            <details className="mt-4 rounded-2xl border border-border bg-background">
+              <summary className="cursor-pointer rounded-2xl px-6 py-4 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+                {pageInfo.detailsLabel}
+              </summary>
+              <div className="border-t border-border">{children}</div>
+            </details>
+          </section>
+        ) : children}
+      </main>
       <footer className="bg-ink text-ink-foreground">
         <div className="mx-auto max-w-6xl px-5 py-12 grid gap-6 md:grid-cols-3">
           <div>

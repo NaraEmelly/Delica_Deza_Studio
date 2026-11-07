@@ -179,7 +179,7 @@ function Index() {
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="px-5 pb-20">
         <div className="mx-auto max-w-6xl rounded-3xl bg-primary grain p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-6 border border-accent/40">
           <div>
