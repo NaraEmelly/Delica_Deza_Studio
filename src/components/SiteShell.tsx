@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { Accessibility, Menu, X, Instagram, MessageCircle, Mail, MapPin } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { SALON, waLink } from "@/lib/salon";
 
 const SIMPLE_MODE_STORAGE_KEY = "delica-deza-simple-mode";
@@ -109,8 +110,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col grain">
       <header className="sticky top-0 z-40 bg-ink text-ink-foreground">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-5 h-16">
-          <Link to="/" className="font-display text-2xl italic">
-            Delica <span className="text-gold not-italic font-semibold">Deza</span>
+          <Link to="/" aria-label="Delica Deza — início">
+            <img src={logo} alt="Delica Deza" className="h-10 w-auto" />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
             {NAV.map((n) => (
@@ -214,9 +215,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <footer className="bg-ink text-ink-foreground">
         <div className="mx-auto max-w-6xl px-5 py-12 grid gap-6 md:grid-cols-3">
           <div>
-            <p className="font-display text-2xl italic">
-              Delica <span className="text-gold not-italic">Deza</span>
-            </p>
+            <img src={logo} alt="Delica Deza" className="h-16 w-auto" />
             <p className="mt-2 text-sm opacity-70">Tranças, cuidado e autoestima.</p>
           </div>
           <div className="space-y-2 text-sm opacity-80">
