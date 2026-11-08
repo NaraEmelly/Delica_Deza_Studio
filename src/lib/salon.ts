@@ -2,21 +2,19 @@
 export const SALON = {
   name: "Delica Deza",
   whatsapp: "5522988328434",
-  pixKey: "delicadeza@email.com",
-  pixName: "DELICA DEZA",
-  pixCity: "SAO PAULO",
-  instagram: "delicadeza",
-  address: "Rua das Tranças, 123 — São Paulo",
+  email: "delicadezacomesticos@hotmail.com",
+  instagram: "delicadeza_oficial",
+  address: "Rua José Mariano Coutinho, 2, Retiro, Saquarema RJ, 28995-101, Brasil",
 };
 
 export const SERVICES = [
-  { id: "box", name: "Box Braids", time: "5h", price: 280 },
-  { id: "knotless", name: "Knotless Braids", time: "6h", price: 350 },
-  { id: "fulani", name: "Fulani Braids", time: "4h", price: 260 },
-  { id: "nago", name: "Tranças Nagô", time: "2h", price: 150 },
-  { id: "twist", name: "Twist / Passion Twist", time: "4h", price: 300 },
-  { id: "manut", name: "Manutenção", time: "1h30", price: 90 },
-  { id: "hidra", name: "Hidratação & Cronograma", time: "1h", price: 80 },
+  { id: "knotles", name: "Knotles" },
+  { id: "entrelace", name: "Entrelace" },
+  { id: "nago", name: "Nagô" },
+  { id: "nago-desenhada", name: "Nagô desenhada" },
+  { id: "nago-topo", name: "Nagô topo" },
+  { id: "fulani-organico", name: "Fulani com orgânico" },
+  { id: "bon-braids", name: "Bon Braids" },
 ];
 
 export const PRODUCTS = [
@@ -32,8 +30,7 @@ export const HOURS = ["08:00", "10:00", "13:00", "15:00", "17:00"];
 // 0=domingo. Abertos de terça a sábado.
 export const OPEN_DAYS = [2, 3, 4, 5, 6];
 
-export const brl = (n: number) =>
-  n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export const brl = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export const waLink = (text: string) =>
   `https://wa.me/${SALON.whatsapp}?text=${encodeURIComponent(text)}`;

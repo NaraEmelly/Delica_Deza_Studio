@@ -5,10 +5,9 @@ import hero from "@/assets/hero.jpg";
 import g1 from "@/assets/g1.jpg";
 import g2 from "@/assets/g2.jpg";
 import nago from "@/assets/nago.jpg";
-import produtos from "@/assets/produtos.jpg";
 import twist from "@/assets/twist.jpg";
 import { meta, PageHead } from "@/components/SiteShell";
-import { HOURS, OPEN_DAYS, SERVICES, brl, waLink } from "@/lib/salon";
+import { HOURS, OPEN_DAYS, SERVICES, waLink } from "@/lib/salon";
 import { buildBookingMessage } from "@/lib/booking-message";
 
 export const Route = createFileRoute("/agendar")({
@@ -33,16 +32,15 @@ const CHEMICAL_TIMES = [
 ];
 
 const SERVICE_IMAGES: Record<string, { src: string; alt: string }> = {
-  box: { src: g1, alt: "Box braids longas com detalhes dourados" },
-  knotless: { src: hero, alt: "Knotless braids longas" },
-  fulani: { src: g2, alt: "Fulani braids com miçangas" },
-  nago: { src: nago, alt: "Tranças nagô com desenhos geométricos" },
-  twist: { src: twist, alt: "Passion twists longos" },
-  manut: { src: g1, alt: "Tranças longas, referência para manutenção" },
-  hidra: { src: produtos, alt: "Produtos para hidratação e cuidados capilares" },
+  knotles: { src: hero, alt: "Tranças Knotles longas" },
+  entrelace: { src: g1, alt: "Tranças longas, referência para entrelace" },
+  nago: { src: nago, alt: "Tranças Nagô" },
+  "nago-desenhada": { src: nago, alt: "Tranças Nagô com desenhos geométricos" },
+  "nago-topo": { src: nago, alt: "Tranças Nagô no topo da cabeça" },
+  "fulani-organico": { src: g2, alt: "Tranças Fulani com miçangas" },
+  "bon-braids": { src: twist, alt: "Tranças longas, referência para Bon Braids" },
 };
 
-const FIBER_SERVICE_IDS = new Set(["box", "knotless", "fulani", "nago", "twist"]);
 const FIBER_COLORS = [
   { name: "1 — Preto", color: "#171717" },
   { name: "1B — Preto natural", color: "#30251f" },
@@ -96,7 +94,6 @@ function Page() {
   }, [month]);
 
   const selectedService = SERVICES.find((item) => item.id === service) ?? SERVICES[0]!;
-  const usesFiber = FIBER_SERVICE_IDS.has(service);
 
   function clearPreparedSend() {
     setFormError("");
@@ -115,18 +112,15 @@ function Page() {
       return;
     }
 
-    if (usesFiber && fiberColorChoice === "colors" && fiberColors.length === 0) {
+    if (fiberColorChoice === "colors" && fiberColors.length === 0) {
       setFormError("Escolha pelo menos uma cor de fibra ou selecione outra opção.");
       return;
     }
 
     const message = buildBookingMessage({
       service: selectedService.name,
-      servicePrice: brl(selectedService.price),
-      serviceDuration: selectedService.time,
-      fiberColor: !usesFiber
-        ? "Não se aplica a este serviço"
-        : fiberColorChoice === "root"
+      fiberColor:
+        fiberColorChoice === "root"
           ? "Da mesma cor da raiz do cabelo"
           : fiberColorChoice === "colors"
             ? fiberColors.join(", ")
@@ -242,13 +236,8 @@ function Page() {
                       <span>
                         <span className="block font-medium">{item.name}</span>
                         <span className="mt-1 block text-sm text-muted-foreground">
-                          Duração: {item.time}
+                          Consulte valores e detalhes pelo WhatsApp.
                         </span>
-                      </span>
-                      <span className="shrink-0 text-right text-sm text-secondary">
-                        a partir de
-                        <br />
-                        {brl(item.price)}
                       </span>
                     </span>
                   </label>
@@ -256,68 +245,66 @@ function Page() {
               })}
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              O valor final pode variar conforme o cabelo.
+              A profissional informará o valor pelo WhatsApp.
             </p>
           </fieldset>
 
-          {usesFiber && (
-            <fieldset>
-              <legend className="mb-2 font-medium">Qual cor de fibra você prefere?</legend>
-              <p className="mb-3 text-sm text-muted-foreground">
-                Você pode escolher uma ou mais cores para combinar.
-              </p>
-              <div className="space-y-2">
-                {[
-                  ["root", "Da mesma cor da raiz do meu cabelo"],
-                  ["colors", "Quero escolher a cor da fibra"],
-                  ["talk", "Prefiro decidir com a profissional"],
-                ].map(([value, label]) => (
-                  <label key={value} className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="fiber-color-choice"
-                      value={value}
-                      checked={fiberColorChoice === value}
-                      onChange={(event) => setFiberColorChoice(event.target.value)}
-                      required
-                    />
-                    {label}
-                  </label>
-                ))}
+          <fieldset>
+            <legend className="mb-2 font-medium">Qual cor de fibra você prefere?</legend>
+            <p className="mb-3 text-sm text-muted-foreground">
+              Você pode escolher uma ou mais cores para combinar.
+            </p>
+            <div className="space-y-2">
+              {[
+                ["root", "Da mesma cor da raiz do meu cabelo"],
+                ["colors", "Quero escolher a cor da fibra"],
+                ["talk", "Prefiro decidir com a profissional"],
+              ].map(([value, label]) => (
+                <label key={value} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="fiber-color-choice"
+                    value={value}
+                    checked={fiberColorChoice === value}
+                    onChange={(event) => setFiberColorChoice(event.target.value)}
+                    required
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+            {fiberColorChoice === "colors" && (
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {FIBER_COLORS.map((fiberColor) => {
+                  const checked = fiberColors.includes(fiberColor.name);
+                  return (
+                    <label
+                      key={fiberColor.name}
+                      className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${checked ? "border-primary bg-primary/10" : "bg-background"}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(event) => {
+                          setFiberColors((current) =>
+                            event.target.checked
+                              ? [...current, fiberColor.name]
+                              : current.filter((color) => color !== fiberColor.name),
+                          );
+                        }}
+                      />
+                      <span
+                        className="size-5 shrink-0 rounded-full border"
+                        style={{ backgroundColor: fiberColor.color }}
+                        aria-hidden="true"
+                      />
+                      {fiberColor.name}
+                    </label>
+                  );
+                })}
               </div>
-              {fiberColorChoice === "colors" && (
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {FIBER_COLORS.map((fiberColor) => {
-                    const checked = fiberColors.includes(fiberColor.name);
-                    return (
-                      <label
-                        key={fiberColor.name}
-                        className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm ${checked ? "border-primary bg-primary/10" : "bg-background"}`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={(event) => {
-                            setFiberColors((current) =>
-                              event.target.checked
-                                ? [...current, fiberColor.name]
-                                : current.filter((color) => color !== fiberColor.name),
-                            );
-                          }}
-                        />
-                        <span
-                          className="size-5 shrink-0 rounded-full border"
-                          style={{ backgroundColor: fiberColor.color }}
-                          aria-hidden="true"
-                        />
-                        {fiberColor.name}
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-            </fieldset>
-          )}
+            )}
+          </fieldset>
 
           <fieldset>
             <legend className="mb-3 font-medium">Dia</legend>
@@ -595,7 +582,6 @@ function Page() {
             >
               <option value="">Selecione uma opção</option>
               <option>Dinheiro</option>
-              <option>Pix</option>
               <option>Cartão de débito</option>
               <option>Cartão de crédito</option>
             </select>

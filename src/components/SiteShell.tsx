@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Accessibility, Menu, X, Instagram, MessageCircle } from "lucide-react";
+import { Accessibility, Menu, X, Instagram, MessageCircle, Mail, MapPin } from "lucide-react";
 import { SALON, waLink } from "@/lib/salon";
 
 const SIMPLE_MODE_STORAGE_KEY = "delica-deza-simple-mode";
@@ -11,20 +11,17 @@ const SIMPLE_PAGE_INFO: Record<string, { description: string; detailsLabel: stri
     detailsLabel: "Ver mais informações do salão",
   },
   "/servicos": {
-    description: "Escolha uma trança, confira o preço inicial e marque seu horário.",
-    detailsLabel: "Ver serviços e preços",
+    description: "Escolha um estilo, veja fotos de referência e marque seu horário.",
+    detailsLabel: "Ver serviços e referências",
   },
   "/agendar": {
-    description: "Escolha o serviço, o dia e o horário. Depois, informe seu nome e confirme pelo WhatsApp.",
+    description:
+      "Escolha o serviço, o dia e o horário. Depois, informe seu nome e confirme pelo WhatsApp.",
     detailsLabel: "Continuar para escolher o horário",
   },
   "/produtos": {
     description: "Escolha os produtos e as quantidades. Depois, envie seu pedido pelo WhatsApp.",
     detailsLabel: "Ver produtos e fazer pedido",
-  },
-  "/pix": {
-    description: "Informe o valor, gere o código Pix e copie para pagar pelo aplicativo do seu banco.",
-    detailsLabel: "Continuar para gerar o Pix",
   },
   "/feedback": {
     description: "Dê uma nota, conte como foi seu atendimento e envie sua opinião pelo WhatsApp.",
@@ -40,7 +37,6 @@ const NAV = [
   { to: "/servicos", label: "Serviços" },
   { to: "/galeria", label: "Galeria" },
   { to: "/produtos", label: "Produtos" },
-  { to: "/pix", label: "Pagar com Pix" },
   { to: "/feedback", label: "Feedback" },
 ] as const;
 
@@ -118,22 +114,37 @@ export function SiteShell({ children }: { children: ReactNode }) {
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm">
             {NAV.map((n) => (
-              <Link key={n.to} to={n.to} className="opacity-80 hover:opacity-100" activeProps={{ className: "text-accent opacity-100" }}>
+              <Link
+                key={n.to}
+                to={n.to}
+                className="opacity-80 hover:opacity-100"
+                activeProps={{ className: "text-accent opacity-100" }}
+              >
                 {n.label}
               </Link>
             ))}
-            <Link to="/agendar" className="btn-gold !py-2">Agendar</Link>
+            <Link to="/agendar" className="btn-gold !py-2">
+              Agendar
+            </Link>
             <SimpleModeButton simpleMode={simpleMode} onToggle={toggleSimpleMode} />
           </nav>
           <div className="flex items-center gap-2 md:hidden">
             <SimpleModeButton simpleMode={simpleMode} onToggle={toggleSimpleMode} />
-            <button type="button" onClick={() => setOpen(!open)} aria-label={open ? "Fechar menu" : "Abrir menu"} aria-expanded={open}>
+            <button
+              type="button"
+              onClick={() => setOpen(!open)}
+              aria-label={open ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={open}
+            >
               {open ? <X /> : <Menu />}
             </button>
           </div>
         </div>
         {showAccessibilityPrompt && (
-          <section className="border-t border-accent/40 bg-background text-foreground" aria-labelledby="accessibility-prompt-title">
+          <section
+            className="border-t border-accent/40 bg-background text-foreground"
+            aria-labelledby="accessibility-prompt-title"
+          >
             <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 id="accessibility-prompt-title" className="text-xl font-semibold">
@@ -157,9 +168,13 @@ export function SiteShell({ children }: { children: ReactNode }) {
         {open && (
           <nav className="md:hidden flex flex-col gap-4 px-5 pb-6 text-lg">
             {NAV.map((n) => (
-              <Link key={n.to} to={n.to} onClick={() => setOpen(false)}>{n.label}</Link>
+              <Link key={n.to} to={n.to} onClick={() => setOpen(false)}>
+                {n.label}
+              </Link>
             ))}
-            <Link to="/agendar" onClick={() => setOpen(false)} className="btn-gold">Agendar horário</Link>
+            <Link to="/agendar" onClick={() => setOpen(false)} className="btn-gold">
+              Agendar horário
+            </Link>
           </nav>
         )}
       </header>
@@ -173,10 +188,15 @@ export function SiteShell({ children }: { children: ReactNode }) {
               <p className="mt-2">{pageInfo.description}</p>
               {pathname === "/" && (
                 <nav className="mt-5 flex flex-wrap gap-3" aria-label="Acesso rápido">
-                  <Link to="/servicos" className="btn-gold">Ver serviços</Link>
-                  <Link to="/agendar" className="btn-ghost">Marcar horário</Link>
-                  <Link to="/produtos" className="btn-ghost">Ver produtos</Link>
-                  <Link to="/pix" className="btn-ghost">Pagar com Pix</Link>
+                  <Link to="/servicos" className="btn-gold">
+                    Ver serviços
+                  </Link>
+                  <Link to="/agendar" className="btn-ghost">
+                    Marcar horário
+                  </Link>
+                  <Link to="/produtos" className="btn-ghost">
+                    Ver produtos
+                  </Link>
                 </nav>
               )}
             </div>
@@ -187,18 +207,65 @@ export function SiteShell({ children }: { children: ReactNode }) {
               <div className="border-t border-border">{children}</div>
             </details>
           </section>
-        ) : children}
+        ) : (
+          children
+        )}
       </main>
       <footer className="bg-ink text-ink-foreground">
         <div className="mx-auto max-w-6xl px-5 py-12 grid gap-6 md:grid-cols-3">
           <div>
-            <p className="font-display text-2xl italic">Delica <span className="text-gold not-italic">Deza</span></p>
+            <p className="font-display text-2xl italic">
+              Delica <span className="text-gold not-italic">Deza</span>
+            </p>
             <p className="mt-2 text-sm opacity-70">Tranças, cuidado e autoestima.</p>
           </div>
-          <p className="text-sm opacity-80">{SALON.address}<br />Ter a Sáb · 08h às 19h</p>
-          <div className="flex gap-3">
-            <a className="btn-ghost !p-3" href={`https://instagram.com/${SALON.instagram}`} target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
-            <a className="btn-ghost !p-3" href={waLink("Olá, Delica Deza!")} target="_blank" rel="noreferrer" aria-label="WhatsApp"><MessageCircle size={18} /></a>
+          <div className="space-y-2 text-sm opacity-80">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SALON.address)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-start gap-2 hover:opacity-100"
+            >
+              <MapPin size={18} className="mt-0.5 shrink-0" />
+              <span>{SALON.address}</span>
+            </a>
+            <p>Ter a Sáb · 08h às 19h</p>
+          </div>
+          <div className="space-y-3">
+            <a
+              className="flex items-center gap-2 text-sm opacity-80 hover:opacity-100"
+              href={`mailto:${SALON.email}`}
+            >
+              <Mail size={18} /> {SALON.email}
+            </a>
+            <div className="flex gap-3">
+              <a
+                className="btn-ghost !p-3"
+                href={`https://instagram.com/${SALON.instagram}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Instagram @${SALON.instagram}`}
+              >
+                <Instagram size={18} />
+              </a>
+              <a
+                className="btn-ghost !p-3"
+                href={waLink("Olá, Delica Deza!")}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="WhatsApp"
+              >
+                <MessageCircle size={18} />
+              </a>
+              <a
+                className="text-sm opacity-80 hover:opacity-100 self-center"
+                href={`https://instagram.com/${SALON.instagram}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                @{SALON.instagram}
+              </a>
+            </div>
           </div>
         </div>
       </footer>
@@ -206,7 +273,15 @@ export function SiteShell({ children }: { children: ReactNode }) {
   );
 }
 
-export function PageHead({ kicker, title, children }: { kicker: string; title: string; children?: ReactNode }) {
+export function PageHead({
+  kicker,
+  title,
+  children,
+}: {
+  kicker: string;
+  title: string;
+  children?: ReactNode;
+}) {
   return (
     <section className="bg-primary text-primary-foreground grain">
       <div className="mx-auto max-w-6xl px-5 py-14">

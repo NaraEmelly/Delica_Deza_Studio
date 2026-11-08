@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgendarRouteImport } from './routes/agendar'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as GaleriaRouteImport } from './routes/galeria'
-import { Route as PixRouteImport } from './routes/pix'
 import { Route as ProdutosRouteImport } from './routes/produtos'
 import { Route as ServicosRouteImport } from './routes/servicos'
 
@@ -37,11 +36,6 @@ const GaleriaRoute = GaleriaRouteImport.update({
   path: '/galeria',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PixRoute = PixRouteImport.update({
-  id: '/pix',
-  path: '/pix',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProdutosRoute = ProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
@@ -58,7 +52,6 @@ export interface FileRoutesByFullPath {
   '/agendar': typeof AgendarRoute
   '/feedback': typeof FeedbackRoute
   '/galeria': typeof GaleriaRoute
-  '/pix': typeof PixRoute
   '/produtos': typeof ProdutosRoute
   '/servicos': typeof ServicosRoute
 }
@@ -67,7 +60,6 @@ export interface FileRoutesByTo {
   '/agendar': typeof AgendarRoute
   '/feedback': typeof FeedbackRoute
   '/galeria': typeof GaleriaRoute
-  '/pix': typeof PixRoute
   '/produtos': typeof ProdutosRoute
   '/servicos': typeof ServicosRoute
 }
@@ -77,36 +69,21 @@ export interface FileRoutesById {
   '/agendar': typeof AgendarRoute
   '/feedback': typeof FeedbackRoute
   '/galeria': typeof GaleriaRoute
-  '/pix': typeof PixRoute
   '/produtos': typeof ProdutosRoute
   '/servicos': typeof ServicosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/agendar'
-    | '/feedback'
-    | '/galeria'
-    | '/pix'
-    | '/produtos'
-    | '/servicos'
+    '/' | '/agendar' | '/feedback' | '/galeria' | '/produtos' | '/servicos'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/agendar'
-    | '/feedback'
-    | '/galeria'
-    | '/pix'
-    | '/produtos'
-    | '/servicos'
+  to: '/' | '/agendar' | '/feedback' | '/galeria' | '/produtos' | '/servicos'
   id:
     | '__root__'
     | '/'
     | '/agendar'
     | '/feedback'
     | '/galeria'
-    | '/pix'
     | '/produtos'
     | '/servicos'
   fileRoutesById: FileRoutesById
@@ -116,7 +93,6 @@ export interface RootRouteChildren {
   AgendarRoute: typeof AgendarRoute
   FeedbackRoute: typeof FeedbackRoute
   GaleriaRoute: typeof GaleriaRoute
-  PixRoute: typeof PixRoute
   ProdutosRoute: typeof ProdutosRoute
   ServicosRoute: typeof ServicosRoute
 }
@@ -151,13 +127,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GaleriaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pix': {
-      id: '/pix'
-      path: '/pix'
-      fullPath: '/pix'
-      preLoaderRoute: typeof PixRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/produtos': {
       id: '/produtos'
       path: '/produtos'
@@ -180,7 +149,6 @@ const rootRouteChildren: RootRouteChildren = {
   AgendarRoute: AgendarRoute,
   FeedbackRoute: FeedbackRoute,
   GaleriaRoute: GaleriaRoute,
-  PixRoute: PixRoute,
   ProdutosRoute: ProdutosRoute,
   ServicosRoute: ServicosRoute,
 }
