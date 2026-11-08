@@ -35,6 +35,7 @@ const SIMPLE_PAGE_INFO: Record<string, { description: string; detailsLabel: stri
 };
 
 const NAV = [
+  { to: "/", label: "Início" },
   { to: "/servicos", label: "Serviços" },
   { to: "/galeria", label: "Galeria" },
   { to: "/produtos", label: "Produtos" },
@@ -118,6 +119,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               <Link
                 key={n.to}
                 to={n.to}
+                activeOptions={{ exact: n.to === "/" }}
                 className="opacity-80 hover:opacity-100"
                 activeProps={{ className: "text-accent opacity-100" }}
               >

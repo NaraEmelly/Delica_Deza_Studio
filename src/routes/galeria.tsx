@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { ImagePlus, Instagram, X } from "lucide-react";
+import { Instagram, X } from "lucide-react";
 import instagramPhoto1 from "@/assets/instagram-cliente-1.jpg";
 import instagramPhoto2 from "@/assets/instagram-cliente-2.jpg";
 import instagramPhoto3 from "@/assets/instagram-cliente-3.jpg";
@@ -36,14 +36,7 @@ const BASE: GalleryPhoto[] = [
 ];
 
 function Page() {
-  const [photos, setPhotos] = useState<GalleryPhoto[]>(BASE);
   const [view, setView] = useState<string | null>(null);
-
-  const add = (files: FileList | null) => {
-    if (!files) return;
-    const extra = Array.from(files).map((f) => ({ src: URL.createObjectURL(f), label: f.name }));
-    setPhotos((p) => [...extra, ...p]);
-  };
 
   return (
     <>
@@ -51,17 +44,7 @@ function Page() {
         Fotos do Instagram oficial e trabalhos das clientes. Toque na imagem para ampliar.
       </PageHead>
       <section className="mx-auto max-w-6xl px-5 py-12">
-        <div className="mb-8 flex flex-wrap gap-3">
-          <label className="btn-gold cursor-pointer">
-            <ImagePlus size={18} /> Adicionar fotos
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              hidden
-              onChange={(e) => add(e.target.files)}
-            />
-          </label>
+        <div className="mb-8">
           <a
             href="https://www.instagram.com/delicadeza_oficial/"
             target="_blank"
@@ -72,7 +55,7 @@ function Page() {
           </a>
         </div>
         <div className="columns-2 gap-3 md:columns-3 [&>*]:mb-3">
-          {photos.map((p, i) => (
+          {BASE.map((p, i) => (
             <figure
               key={`${p.label}-${i}`}
               className="break-inside-avoid overflow-hidden rounded-2xl"
