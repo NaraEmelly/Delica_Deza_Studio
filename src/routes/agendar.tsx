@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import hero from "@/assets/hero.jpg";
 import g1 from "@/assets/g1.jpg";
@@ -9,6 +9,7 @@ import twist from "@/assets/twist.jpg";
 import { meta, PageHead } from "@/components/SiteShell";
 import { HOURS, OPEN_DAYS, SERVICES, waLink } from "@/lib/salon";
 import { buildBookingMessage } from "@/lib/booking-message";
+import { isSupabaseConfigured, recordBookingAccess, supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/agendar")({
   validateSearch: (q: Record<string, unknown>): { s?: string } =>
@@ -67,6 +68,7 @@ function Page() {
   const [hour, setHour] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [socialName, setSocialName] = useState("");
+  const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("");
   const [hadRecentChemical, setHadRecentChemical] = useState("");
   const [lastChemical, setLastChemical] = useState("");
@@ -78,6 +80,17 @@ function Page() {
   const [formError, setFormError] = useState("");
   const [sendStatus, setSendStatus] = useState("");
   const [preparedMessage, setPreparedMessage] = useState("");
+  const [trackingError, setTrackingError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    void recordBookingAccess("form_visit").then((error) => {
+      if (active && error) setTrackingError(error);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -103,9 +116,11 @@ function Page() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setFormError("");
     setSendStatus("");
     setPreparedMessage("");
+    setTrackingError("");
 
     if (!day || !hour) {
       setFormError("Escolha um dia e um horário para continuar.");
@@ -131,6 +146,7 @@ function Page() {
       time: hour,
       name: name.trim(),
       socialName: socialName.trim(),
+      phone: phone.trim(),
       gender,
       hadRecentChemical: hadRecentChemical === "yes",
       lastChemical: hadRecentChemical === "yes" ? lastChemical : "",
@@ -140,43 +156,71 @@ function Page() {
       inspirationPhotoNames: inspirationPhotos.map((file) => file.name),
       personalPhotoName: personalPhoto?.name ?? "",
     });
-    const files = [...inspirationPhotos, ...(personalPhoto ? [personalPhoto] : [])];
+    const requestedDate = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`;
+    const requestedTime = hour;
+    setPreparedMessage(message);
+    const whatsappWindow = window.open("about:blank", "_blank");
+    if (whatsappWindow) whatsappWindow.opener = null;
+    setSendStatus("Registrando o pedido e preparando o WhatsApp...");
 
-    if (files.length > 0) {
+    const errors: string[] = [];
+    if (!supabase) {
+      errors.push("Supabase não configurado: este pedido não será salvo no painel.");
+    } else {
       try {
-        if (typeof navigator.share === "function" && navigator.canShare?.({ files })) {
-          await navigator.share({
-            title: "Pedido de agendamento — Delica Deza",
-            text: message,
-            files,
-          });
-          setSendStatus(
-            "Compartilhamento concluído. Confira se as fotos e a ficha foram enviadas pelo WhatsApp.",
-          );
-          return;
+        const accessError = await recordBookingAccess("submission");
+        if (accessError) errors.push(accessError);
+
+        const formData = new FormData(form);
+        const { error: bookingError } = await supabase.rpc("create_booking_request", {
+          p_service_name: selectedService.name,
+          p_fiber_color:
+            fiberColorChoice === "root"
+              ? "Da mesma cor da raiz do cabelo"
+              : fiberColorChoice === "colors"
+                ? fiberColors.join(", ")
+                : fiberColorChoice === "talk"
+                  ? "Prefere conversar com a profissional"
+                  : "Não informado",
+          p_requested_for: requestedDate,
+          p_requested_time: requestedTime,
+          p_client_name: name.trim(),
+          p_social_name: socialName.trim(),
+          p_client_phone: phone.trim(),
+          p_gender: gender,
+          p_had_recent_chemical: hadRecentChemical === "yes",
+          p_last_chemical: hadRecentChemical === "yes" ? lastChemical : "",
+          p_braided_before: braidedBefore === "yes",
+          p_hair_type: hairType,
+          p_payment_method: paymentMethod,
+          p_inspiration_photo_names: inspirationPhotos.map((file) => file.name),
+          p_personal_photo_name: personalPhoto?.name ?? "",
+          p_consent: formData.get("data-consent") === "on",
+        });
+        if (bookingError) {
+          console.error("Não foi possível salvar o pedido de agendamento.", bookingError);
+          errors.push("O pedido não foi salvo no painel.");
         }
       } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          setSendStatus("Compartilhamento cancelado. Suas fotos continuam selecionadas.");
-          return;
-        }
-        console.error("Não foi possível compartilhar as fotos do agendamento.", error);
-        setPreparedMessage(message);
-        setSendStatus(
-          "Não foi possível compartilhar as fotos automaticamente. Abra o WhatsApp abaixo e anexe-as à conversa.",
-        );
-        return;
+        console.error("Falha ao integrar o agendamento com o Supabase.", error);
+        errors.push("Não foi possível comunicar com o Supabase; o pedido não foi salvo no painel.");
       }
-
-      setPreparedMessage(message);
-      setSendStatus(
-        "Este aparelho não permite anexar fotos pelo compartilhamento. Abra o WhatsApp abaixo e anexe as fotos selecionadas antes de enviar.",
-      );
-      return;
     }
 
-    setPreparedMessage(message);
-    setSendStatus("Sua ficha está pronta. Abra o WhatsApp para conferir e enviar.");
+    if (whatsappWindow) {
+      whatsappWindow.location.href = waLink(message);
+      setSendStatus(
+        `O WhatsApp foi aberto com sua ficha para o contato da profissional. Revise e toque em Enviar para confirmar o pedido.${
+          errors.length ? ` Atenção: ${errors.join(" ")}` : ""
+        }`,
+      );
+    } else {
+      setSendStatus(
+        `O navegador bloqueou a abertura automática. Use o botão abaixo para abrir o WhatsApp e enviar sua ficha.${
+          errors.length ? ` Atenção: ${errors.join(" ")}` : ""
+        }`,
+      );
+    }
   }
 
   return (
@@ -415,6 +459,20 @@ function Page() {
               value={name}
               onChange={(event) => setName(event.target.value)}
               autoComplete="name"
+              required
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1 block font-medium">Seu WhatsApp para contato</span>
+            <input
+              className="field"
+              type="tel"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              autoComplete="tel"
+              minLength={8}
+              maxLength={40}
               required
             />
           </label>
@@ -681,24 +739,35 @@ function Page() {
               {sendStatus}
             </p>
           )}
+          {(!isSupabaseConfigured || trackingError) && (
+            <p role="alert" className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+              {trackingError ||
+                "O banco ainda não está conectado. Os pedidos continuarão abrindo no WhatsApp, mas não aparecerão no painel profissional."}
+            </p>
+          )}
           {preparedMessage && (
             <a
               href={waLink(preparedMessage)}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="btn-gold w-full"
             >
-              Abrir WhatsApp e enviar ficha
+              Abrir WhatsApp caso não tenha aberto
             </a>
           )}
           <button type="submit" className="btn-gold w-full">
-            {inspirationPhotos.length > 0 || personalPhoto
-              ? "Preparar ficha e compartilhar fotos"
-              : "Preparar ficha para o WhatsApp"}
+            Enviar pedido de agendamento
           </button>
+          <label className="flex items-start gap-3 text-sm">
+            <input className="mt-1" type="checkbox" name="data-consent" required />
+            <span>
+              Autorizo o uso destes dados pela profissional para organizar meu agendamento e
+              preparar o atendimento. Meus dados não serão exibidos publicamente.
+            </span>
+          </label>
           <p className="text-center text-xs text-muted-foreground">
-            Você poderá revisar a mensagem e confirmar o envio no WhatsApp. O agendamento será
-            confirmado pela profissional.
+            O WhatsApp será aberto com a ficha preenchida para você confirmar o envio. Se selecionou
+            fotos, anexe-as na conversa. O agendamento será confirmado pela profissional.
           </p>
         </div>
       </form>

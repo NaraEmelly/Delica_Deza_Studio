@@ -5,6 +5,7 @@ export interface BookingMessageDetails {
   time: string;
   name: string;
   socialName: string;
+  phone: string;
   gender: string;
   hadRecentChemical: boolean;
   lastChemical: string;
@@ -27,6 +28,7 @@ export function buildBookingMessage(details: BookingMessageDetails) {
     "",
     "DADOS DA CLIENTE",
     `• Nome: ${details.name}`,
+    `• WhatsApp: ${details.phone}`,
     ...(details.socialName ? [`• Nome social: ${details.socialName}`] : []),
     `• Identidade de gênero: ${details.gender}`,
     "",

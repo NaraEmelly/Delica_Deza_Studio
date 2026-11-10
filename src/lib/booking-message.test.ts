@@ -9,6 +9,7 @@ const booking = {
   time: "10:00",
   name: "Ana Silva",
   socialName: "Ana",
+  phone: "(22) 99999-1234",
   gender: "Mulher",
   hadRecentChemical: true,
   lastChemical: "De 1 a 3 meses",
@@ -29,6 +30,7 @@ describe("buildBookingMessage", () => {
     expect(message).toContain("informe o valor do serviço");
     expect(message).not.toContain("Valor inicial:");
     expect(message).toContain("• Nome social: Ana");
+    expect(message).toContain("• WhatsApp: (22) 99999-1234");
     expect(message).toContain(
       "• Procedimento químico recente: Sim — último procedimento de 1 a 3 meses",
     );

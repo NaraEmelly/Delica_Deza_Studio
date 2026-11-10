@@ -107,6 +107,10 @@ export function SiteShell({ children }: { children: ReactNode }) {
     chooseSimpleMode(!simpleMode);
   }
 
+  if (pathname.startsWith("/painel")) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col grain">
       <header className="sticky top-0 z-40 bg-ink text-ink-foreground">
@@ -231,6 +235,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
               <span>{SALON.address}</span>
             </a>
             <p>Ter a Sáb · 08h às 19h</p>
+            <Link to="/painel" className="inline-block pt-2 hover:opacity-100">
+              Acesso profissional
+            </Link>
           </div>
           <div className="space-y-3">
             <a
